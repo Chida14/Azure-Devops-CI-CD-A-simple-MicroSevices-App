@@ -1,1 +1,1 @@
-# Azure-Devops-CI-CD-A-simple-MicroSevices-App
+# Azure-Devops-CI-CD-A-Simple-MicroSevices-App
