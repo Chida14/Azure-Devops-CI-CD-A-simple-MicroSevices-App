@@ -1,0 +1,108 @@
+
+trigger:
+ paths:
+   include:
+     - result/*
+
+pool:
+ name: az-ci
+
+
+variables:
+- group: az-repo2-token
+- name: imageRepository
+  value: 'result'
+- name: tag
+  value: '$(Build.BuildId)'
+
+stages:
+  - stage: sonarqube
+    displayName: Sonar Analysis
+    jobs:
+      - job: sonarqube
+        displayName: Sonar Analysis
+        steps:
+          - task: SonarQubePrepare@7
+            inputs:
+              SonarQube: 'sonar-con'
+              scannerMode: 'cli'
+              configMode: 'manual'
+              cliProjectKey: 'result'
+              cliProjectName: 'result'
+              cliSources: '.'
+              extraProperties: 'sonar.java.binaries=.'
+      
+          - task: SonarQubeAnalyze@7
+            inputs:
+              jdkversion: 'JAVA_HOME_17_X64'
+   
+  - stage: Build
+    displayName: "Build the Result Image"
+    jobs:
+      - job: build
+        displayName: "Build the Result Image"
+        steps:
+          - task: Docker@2
+            inputs:
+              containerRegistry: 'acr-con'
+              repository: '$(imageRepository)'
+              command: 'build'
+              Dockerfile: 'result/Dockerfile'
+
+          # Print the Docker image ID
+          - script: |
+              echo "Printing Docker image details for $(imageRepository):$(tag)"
+              docker images $(imageRepository):$(tag) --format "{{.Repository}}:{{.Tag}} -> ID: {{.ID}}"
+            displayName: "Print Docker Image ID"
+
+          # Print the repository name from the pipeline variable
+          - script: |
+              echo "Repository name for the vote image is: $(imageRepository)"
+            displayName: "Print Image Repository (Variable)"
+
+  - stage: trivy_image_scan
+    displayName: Trivy Image Scan
+    jobs:
+        - job: trivy_image_scan
+          displayName: Trivy Image Scan
+          steps:
+            - task: CmdLine@2
+              inputs:
+                script: 'trivy image --format table -o vote-image.html cmandolk1.azurecr.io/result:$(tag)'
+
+  - stage: Push
+    displayName: "Push the Result Image"
+    jobs:
+      - job: push
+        displayName: "Push the Result Image"
+        steps:
+          - task: Docker@2
+            inputs:
+              containerRegistry: 'acr-con'
+              repository: '$(imageRepository)'
+              command: 'push'
+              tags: '$(tag)'
+          
+      ## Publish Artifacts pipeline code in addition to Build and Push             
+          - bash: echo Contents in System Default Working Directory; ls -R $(System.DefaultWorkingDirectory)        
+          - bash: echo Before copying Contents in Build Artifact Directory; ls -R $(Build.ArtifactStagingDirectory)
+  
+  - stage: Update_Image_tag
+    displayName: "Update the image tag for the K8s manifest of Result deployment"
+    jobs:
+      - job: ipdate_image_tag
+        displayName: "Update the image tag for the K8s manifest of Result deployment"
+        steps:
+          - task: CmdLine@2
+            inputs:
+              script: |
+                file=/home/azureuser/myagent/_work/2/s/scripts/update-result-K8sManifest.sh
+                sudo apt-get update -y
+                sudo apt-get install dos2unix -y
+                # Convert the script to Unix format and make it executable
+                dos2unix $file
+                chmod +x $file
+          - task: ShellScript@2
+            inputs:
+              scriptPath: 'scripts/update-result-K8sManifest.sh'
+              args: 'result $(imageRepository) $(tag) $(az-pat)'

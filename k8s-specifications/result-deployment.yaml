@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: result
+  name: result
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: result
+  template:
+    metadata:
+      labels:
+        app: result
+    spec:
+      imagePullSecrets:
+      - name: acr-cmandolk1
+      containers:
+      - image: cmandolk1.azurecr.io/result:361
+        name: result
+        ports:
+        - containerPort: 80
+          name: result

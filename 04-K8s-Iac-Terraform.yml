@@ -1,0 +1,171 @@
+
+trigger:
+ paths:
+   include:
+     - K8-terraform-manifest/*
+
+
+pool:
+ name: az-ci
+ demands:
+   - agent.name -equals Agent-1
+
+# Define variables for Environments
+variables: 
+- group: SUBSCRIPTION_ID
+- name: DEV_ENVIRONMENT
+  value: dev1
+- name: QA_ENVIRONMENT
+  value: qa
+  
+
+
+
+# Stage-1: Terraform Validate Stage
+## Step-1: Publish Artifacts to Pipeline (Pipeline artifacts provide a way to share files between stages in a pipeline or between different pipelines. )
+## Step-2: Install Latest Terraform (Ideally not needed if we use default Ubuntu Agents)
+## Step-3: Validate Terraform Manifests (terraform init, terraform validate)
+
+stages:
+  - stage: TerraformValidate
+    displayName: "Terraform Validate"
+    jobs:
+      - job: TerraformValidateJob
+        continueOnError: false
+        steps:
+          - task: PublishPipelineArtifact@1
+            displayName: Publish Artifacts to Pipeline
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/K8-terraform-manifest'
+              artifact: 'K8-terraform-manifest-out'
+              publishLocation: 'pipeline'
+              
+        # Installed terraform manually on the agent
+          # - task: TerraformInstaller@2
+          #   displayName: Terraform Install
+          #   inputs:
+          #     terraformVersion: 'latest'
+
+
+          - task: TerraformCLI@2
+            displayName: Terraform Init
+            inputs:
+              command: 'init'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/K8-terraform-manifest'
+              backendType: 'azurerm'
+              backendServiceArm: 'ARM-CON-SVC'
+              ensureBackend: true
+              backendAzureRmResourceGroupName: 'aus-east-storage_account'
+              backendAzureRmResourceGroupLocation: 'australiaeast'
+              backendAzureRmStorageAccountName: 'cmandolk1'
+              backendAzureRmStorageAccountSku: 'Locally-redundant storage (LRS)'
+              backendAzureRmContainerName: 'tfstatefiles'
+              backendAzureRmKey: 'aks-$(DEV_ENVIRONMENT).tfstate'
+              allowTelemetryCollection: false
+
+          - task: TerraformCLI@2
+            displayName: Terraform validate
+            inputs:
+              command: 'validate'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/K8-terraform-manifest'
+              allowTelemetryCollection: false
+          
+# Stage-2: Deploy Stages for Dev & QA
+# Deployment-1: Deploy Dev AKS Cluster
+## Step-1: Define Variables for environments
+## Step-2: Download SSH Secure File
+## Step-3: Terraform Initialize (State Storage to store in Azure Storage Account for Dev AKS Cluster)
+## Step-4: Terraform Plan (Create Plan)
+## Step-5: Terraform Apply (Use the plan created in previous step)
+
+  - stage: DeployAKSClusters
+    jobs:
+      - deployment: DeployDevAKSCluster
+        displayName: Deploy-Dev-AKS-Cluster
+        environment: $(DEV_ENVIRONMENT)
+        strategy: 
+         runOnce:
+           deploy:
+            steps:
+               - task: DownloadSecureFile@1
+                 name: sshkey
+                 inputs:
+                  secureFile: 'aksprodsshkey.pub'
+             
+               - task: TerraformCLI@2
+                 displayName: Terraform Init
+                 inputs:
+                   command: 'init'
+                   workingDirectory: '$(Pipeline.Workspace)/K8-terraform-manifest-out'
+                   commandOptions: '-reconfigure'
+                   backendType: 'azurerm'
+                   backendServiceArm: 'ARM-CON-SVC'
+                   backendAzureRmResourceGroupName: 'aus-east-storage_account'
+                   backendAzureRmStorageAccountName: 'cmandolk1'
+                   backendAzureRmContainerName: 'tfstatefiles'
+                   backendAzureRmKey: 'aks-$(DEV_ENVIRONMENT).tfstate'
+                   allowTelemetryCollection: false
+
+               - task: TerraformCLI@2
+                 displayName: Terraform Plan
+                 inputs:
+                   command: 'plan'
+                   workingDirectory: '$(Pipeline.Workspace)/K8-terraform-manifest-out'
+                   environmentServiceName: 'ARM-CON-SVC'
+                   commandOptions: '-out $(Pipeline.Workspace)/K8-terraform-manifest-out/$(DEV_ENVIRONMENT)-$(Build.BuildId).out -var ssh_public_key=$(sshkey.secureFilePath) -var environment=$(DEV_ENVIRONMENT) -var subscription_id=$(SUBSCRIPTION_ID)'
+                   allowTelemetryCollection: false
+    
+               - task: TerraformCLI@2
+                 displayName: Terraform Apply
+                 inputs:
+                   command: 'apply'
+                   workingDirectory: '$(Pipeline.Workspace)/K8-terraform-manifest-out'
+                   environmentServiceName: 'ARM-CON-SVC'
+                   commandOptions: '$(Pipeline.Workspace)/K8-terraform-manifest-out/$(DEV_ENVIRONMENT)-$(Build.BuildId).out'
+                   allowTelemetryCollection: true
+    
+      # - deployment: DeployQAAKSCluster
+      #   dependsOn: DeployDevAKSCluster
+      #   displayName: Deploy-QA-AKS-Cluster
+      #   environment: $(QA_ENVIRONMENT)
+      #   strategy: 
+      #    runOnce:
+      #      deploy:
+      #        steps:
+      #          - task: DownloadSecureFile@1
+      #            name: sshkey
+      #            displayName: Download SSh Key
+      #            inputs:
+      #              secureFile: 'aksprodsshkey.pub'
+
+      #          - task: TerraformCLI@2
+      #            displayName: Terraform Init
+      #            inputs:
+      #              command: 'init'
+      #              workingDirectory: '$(Pipeline.Workspace)/terraform-manifests-out'
+      #              commandOptions: '-reconfigure'
+      #              backendType: 'azurerm'
+      #              backendServiceArm: 'ARM-SVC-CON'
+      #              backendAzureRmResourceGroupName: 'aus-east-storage_account'
+      #              backendAzureRmStorageAccountName: 'cmandolk'
+      #              backendAzureRmContainerName: 'tfstatefiles'
+      #              backendAzureRmKey: 'aks-$(QA_ENVIRONMENT).tfstate'
+      #              allowTelemetryCollection: false
+
+      #          - task: TerraformCLI@2
+      #            displayName: Terraform Plan
+      #            inputs:
+      #              command: 'plan'
+      #              workingDirectory: '$(Pipeline.Workspace)/terraform-manifests-out'
+      #              environmentServiceName: 'ARM-SVC-CON'
+      #              commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath) -out $(Pipeline.Workspace)/terraform-manifests-out/$(QA_ENVIRONMENT)-$(Build.BuildId).out -var environment=$(QA_ENVIRONMENT) -var subscription_id=$(SUBSCRIPTION_ID)'
+      #              allowTelemetryCollection: false
+    
+      #          - task: TerraformCLI@2
+      #            displayName: Terraform Apply
+      #            inputs:
+      #              command: 'apply'
+      #              workingDirectory: '$(Pipeline.Workspace)/terraform-manifests-out'
+      #              environmentServiceName: 'ARM-SVC-CON'
+      #              commandOptions: '$(Pipeline.Workspace)/terraform-manifests-out/$(QA_ENVIRONMENT)-$(Build.BuildId).out'
+      #              allowTelemetryCollection: true

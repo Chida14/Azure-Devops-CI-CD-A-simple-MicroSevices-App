@@ -1,0 +1,30 @@
+# This Pipeline publishes the application deployment K8s manifest files to the pipline for the release pipline to deploy the app to K8s cluster
+
+trigger:
+ paths:
+   include:
+     - k8s-specifications/*
+
+pool:
+ name: az-ci
+
+## Publish Artifacts (K8s-specifications manifest code)
+          - bash: echo Contents in System Default Working Directory; ls -R $(System.DefaultWorkingDirectory)        
+          - bash: echo Before copying Contents in Build Artifact Directory; ls -R $(Build.ArtifactStagingDirectory)        
+    
+# Task-1: Copy files (Copy files from a source folder to target folder)
+# Source Directory: $(System.DefaultWorkingDirectory)/k8s-specifications
+# Target Directory: $(Build.ArtifactStagingDirectory)
+
+stages:
+  - stage: PublishK8SpecManifestArtifact
+    displayName: "Publish K8s-specification manifest files"
+    jobs:
+      - job: Publish_K8_Spec_manifest_artifact_to_pipeline
+        displayName: "Publish_artifact_to_pipeline"
+        steps:
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/k8s-specifications'
+              artifact: 'k8s-specifications-out'
+              publishLocation: 'pipeline'
