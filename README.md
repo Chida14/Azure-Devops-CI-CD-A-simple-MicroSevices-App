@@ -129,6 +129,8 @@ This approach centralizes environment control in the cluster itself rather than 
   ![Image](https://github.com/user-attachments/assets/1798a6a2-78e2-44a3-a36f-cb54b3aacca4)
 
   ![Image](https://github.com/user-attachments/assets/02ab8146-f24a-49a1-aa8d-8e52fa9b6876)
+
+  ![Image](https://github.com/user-attachments/assets/68b77e0b-7c1d-4d46-ac1a-0d7e137d79fb)
   
 ---
 
