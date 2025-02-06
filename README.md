@@ -18,6 +18,8 @@ Provide a concise summary of your project or application:
 5. [Azure DevOps CI/CD Overview](#7-azure-devops-cicd-overview)  
     1. [Continuous Integration (CI)](#71-continuous-integration-ci)  
     2. [Continuous Delivery/Deployment (CD)](#72-continuous-deliverydeployment-cd)  
+        - [Push-based Approach](#push-based-approach)  
+        - [GitOps Approach (ArgoCD)](#gitops-approach-argocd)  
 6. [Branching Strategy](#8-branching-strategy)  
 7. [Build Pipeline](#9-build-pipeline)  
 8. [Release Pipeline](#10-release-pipeline)  
@@ -95,6 +97,36 @@ Give an overview of the CI/CD pipeline stages and how they are organized in Azur
 
 - **Promotion Through Stages**: Development → Testing → Production.  
 - **Approvals & Gates**: State any manual approval gates or automated checks.
+
+#### Push-based Approach
+A traditional push-based CI/CD model involves the pipeline pushing changes to the target environment once the build and tests pass. Azure DevOps orchestrates the entire deployment process:
+1. **Build and Test**: Code is compiled, tests are run, and artifacts are produced.
+2. **Push Deployment**: A deployment task (e.g., Azure WebApp Deploy, Kubernetes deployment task) then pushes the artifacts or container images to the target environment.
+3. **Trigger**: Typically triggered on merges to `main` or completion of a successful build in staging.
+
+> **Advantages**  
+> - Familiar and straightforward.  
+> - Centralized control within Azure DevOps pipelines.  
+
+> **Disadvantages**  
+> - Environments must be accessible from the pipeline (firewalls, networking constraints).  
+> - State of the environment is controlled primarily by the pipeline rather than by the environment itself.
+
+#### GitOps Approach (ArgoCD)
+A GitOps model shifts the deployment control to the environment itself by continuously syncing from a designated Git repository. Tools like ArgoCD monitor configuration in a repo (often a separate “environment” repo) and apply changes to the cluster or infrastructure.
+
+1. **Declarative Configuration**: The application and environment are described declaratively in YAML or Helm charts.
+2. **Sync/Monitoring**: ArgoCD monitors the Git repository for changes. Once a change is detected, ArgoCD pulls the updated configuration and reconciles it with the live environment.
+3. **Rollback**: Versioning is inherent in Git; reverting a commit reverts the environment.
+
+> **Advantages**  
+> - Self-healing: If someone manually changes the environment, ArgoCD reverts it to the Git state.  
+> - Clear audit trail: Git history shows all changes.  
+> - Simplified rollbacks: Revert a commit to restore a previous environment state.  
+
+> **Disadvantages**  
+> - Learning curve if your team is used to push-based deployments.  
+> - Requires additional tools (e.g., ArgoCD, Helm, or Kustomize).  
 
 ---
 
@@ -250,4 +282,3 @@ Provide ways to reach the maintainers or team members:
 - **Keep Documentation Updated**: Revise the documentation whenever your pipeline or project structure changes.  
 - **Wiki or `docs/` Folder**: Larger projects may benefit from more detailed docs in a separate folder or a GitHub Wiki.  
 - **Automate Where Possible**: Consider using badges (build status, test coverage) and auto-generated release notes.
-
