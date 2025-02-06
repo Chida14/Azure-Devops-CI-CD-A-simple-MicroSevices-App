@@ -2,277 +2,135 @@
 
 # 1. Introduction
 
-Explain why this project exists, the problem it solves, and its primary goals.
+This project is a reference implementation showing how to build, test, and deploy a simple distributed application using Azure DevOps, running across multiple K8s deployments and services. We leverage a fully automated pipeline for both Continuous Integration (CI) and Continuous Deployment (CD), ensuring code quality, reliability, and speed of delivery.
 
-> **Example**  
-> This project is a reference implementation showing how to build, test, and deploy a .NET Core application using Azure DevOps. We leverage a fully automated pipeline for both Continuous Integration (CI) and Continuous Deployment (CD), ensuring code quality, reliability, and speed of delivery.
-
----
-
-## 2. Table of Contents
-
-1. [Introduction](#1-introduction)  
-2. [Table of Contents](#2-table-of-contents)  
-3. [Architecture Overview](#3-architecture-overview)  
-4. [Project Structure](#4-project-structure)  
-5. [Prerequisites](#5-prerequisites)  
-6. [Azure DevOps CI/CD Overview](#6-azure-devops-cicd-overview)  
-   1. [Continuous Integration (CI)](#61-continuous-integration-ci)  
-   2. [Continuous Delivery/Deployment (CD)](#62-continuous-deliverydeployment-cd)  
-      - [Push-based Approach](#push-based-approach)  
-      - [GitOps Approach (ArgoCD)](#gitops-approach-argocd)  
-7. [Branching Strategy](#7-branching-strategy)  
-8. [Build Pipeline](#8-build-pipeline)  
-9. [Release Pipeline](#9-release-pipeline)  
-10. [Testing and Quality Checks](#10-testing-and-quality-checks)  
-11. [Environment Variables and Secrets](#11-environment-variables-and-secrets)  
-12. [Monitoring and Logging](#12-monitoring-and-logging)  
-13. [Troubleshooting](#13-troubleshooting)  
-14. [Best Practices](#14-best-practices)  
-15. [Contributing](#15-contributing)  
-16. [License](#16-license)  
-17. [Contact Information](#17-contact-information)  
-18. [Final Notes](#18-final-notes)
+The source code is cloned from [https://github.com/dockersamples/example-voting-app](https://github.com/dockersamples/example-voting-app).
 
 ---
 
-## 3. Architecture Overview
+## 2. Architecture Overview
 
-Provide a high-level overview or diagram of the system’s architecture, focusing on how your application, services, databases, and Azure DevOps pipelines interact.
+### 2.1. Application Architecture
 
-- **Diagram**: Include a simple diagram (using tools like draw.io, Lucidchart, or a markdown-based ASCII diagram) that illustrates how the code flows from GitHub into Azure DevOps, through build, test, and deployment stages, and eventually into the target environment(s).  
-- **Key Components**: Highlight each component (e.g., web app, database, Azure DevOps pipelines, test harness, etc.) and its role.
+This is a simple voting application made up of multiple microservices:
+
+- **A front-end web app in Python** which lets you vote between two options  
+- **A Redis** instance that collects new votes  
+- **A .NET worker** which consumes votes and stores them in…  
+- **A Postgres database** backed by a Docker volume  
+- **A Node.js web app** which shows the results of the voting in real time  
+
+### 2.2. CI/CD Architecture
+
+We use two approaches to deploy to our Kubernetes clusters: **push-based** deployments and a **GitOps** approach using ArgoCD.
 
 ---
 
-## 4. Project Structure
+## 3. Project Structure
 
-Outline the important folders and files in your repository. Emphasize how each part relates to the CI/CD process.
+Important folders and files in the repository used for the CI/CD process. (Adjust to your repository layout as needed.)
 
 > **Example**  
 > ```bash
 > .
-> ├── .github/                  # (If using GitHub Actions for integration or referencing GitHub workflows)
-> ├── azure-pipelines/          # Directory containing Azure Pipeline YAML files
-> ├── src/                      # Application source code
-> │   ├── Controllers/          # Web API or MVC controllers
-> │   ├── Models/               # Data models
-> │   └── Services/             # Business logic
-> ├── tests/                    # Unit tests and integration tests
-> ├── Dockerfile                # Docker configuration (if containerizing)
-> ├── azure-pipelines.yml       # Example main pipeline definition file
-> └── README.md                 # Project documentation
+> ├── src/
+> │   ├── vote/                # Python-based voting app
+> │   ├── worker/              # .NET worker service
+> │   ├── result/              # Node.js results app
+> ├── k8s-specifications/      # YAML manifests for the microservices
+> ├── terraform/               # Terraform files for AKS & infrastructure
+> ├── pipelines/               # Azure DevOps pipeline definitions
+> └── README.md                # Project documentation
 > ```
 
 ---
 
-## 5. Prerequisites
+## 4. Prerequisites
 
-List what is needed before someone can successfully run or contribute to the project:
-
-- **Tools**: .NET SDK, Node.js, Azure CLI, Docker, etc.  
+- **Tools**: Azure CLI, Docker, Terraform, ArgoCD, HELM.  
 - **Azure DevOps**: Valid account with appropriate permissions to create pipelines and releases.  
-- **GitHub Access**: Permissions to clone/push/pull from this repository.  
-- **IDE**: (Optional) Visual Studio, VSCode, or IntelliJ, whichever is relevant.
+- **GitHub Access**: Permission to clone/push/pull from this repository.  
+- **IDE**: (Optional) VSCode (or any IDE of choice).
 
 ---
 
-## 6. Azure DevOps CI/CD Overview
+## 5. Azure DevOps CI/CD Overview
 
-Give an overview of the CI/CD pipeline stages and how they are organized in Azure DevOps.
+### Continuous Integration (CI) & Continuous Delivery/Deployment (CD)
 
-### 6.1. Continuous Integration (CI)
+We have **5 pipelines** set up, each targeting specific aspects of this project:
 
-- **Triggering**: Describe how CI is triggered (e.g., on every push to `main` or via pull requests).  
-- **Goals**: Explain code compilation, unit tests, linting, static code analysis, etc.
+1. **Vote Microservice CI**  
+2. **Worker Microservice CI**  
+3. **Result Microservice CI**  
+4. **K8s-Iac-Terraform-Manifest-Pipeline**:  
+   - Validates Terraform manifests, runs the plan, and if everything goes well, applies it to deploy to the AKS cluster in Azure.  
 
-### 6.2. Continuous Delivery/Deployment (CD)
+5. **K8s-specifications-Publish-to-Pipeline**:  
+   - Publishes the Kubernetes manifest files to a staging directory in the pipeline for the release pipeline to pick up and deploy the application to the Dev AKS cluster.
 
-- **Promotion Through Stages**: Development → Testing → Production.  
-- **Approvals & Gates**: State any manual approval gates or automated checks.
+Within each microservice’s CI pipeline, we perform:
+- **Code Analysis** using SonarQube  
+- **Build and Container Image Creation**  
+- **Security Scanning** of the container image using tools like Trivy  
+- **Publishing** of the resulting image to **Azure Container Registry (ACR)**  
 
-#### Push-based Approach
-A traditional push-based CI/CD model involves the pipeline pushing changes to the target environment once the build and tests pass. Azure DevOps orchestrates the entire deployment process:
+A shell script also updates the Kubernetes deployment manifests (`Vote`, `Worker`, and `Result`) in the `k8s-specifications` directory with the latest container image tag.
 
-1. **Build and Test**: Code is compiled, tests are run, and artifacts are produced.  
-2. **Push Deployment**: A deployment task (e.g., Azure WebApp Deploy, Kubernetes deployment task) then pushes the artifacts or container images to the target environment.  
-3. **Trigger**: Typically triggered on merges to `main` or completion of a successful build in staging.
-
-> **Advantages**  
-> - Familiar and straightforward.  
-> - Centralized control within Azure DevOps pipelines.  
-
-> **Disadvantages**  
-> - Environments must be accessible from the pipeline (firewalls, networking constraints).  
-> - State of the environment is controlled primarily by the pipeline rather than by the environment itself.
-
-#### GitOps Approach (ArgoCD)
-A GitOps model shifts the deployment control to the environment itself by continuously syncing from a designated Git repository. Tools like ArgoCD monitor configuration in a repo (often a separate “environment” repo) and apply changes to the cluster or infrastructure.
-
-1. **Declarative Configuration**: The application and environment are described declaratively in YAML or Helm charts.  
-2. **Sync/Monitoring**: ArgoCD monitors the Git repository for changes. Once a change is detected, ArgoCD pulls the updated configuration and reconciles it with the live environment.  
-3. **Rollback**: Versioning is inherent in Git; reverting a commit reverts the environment.
-
-> **Advantages**  
-> - Self-healing: If someone manually changes the environment, ArgoCD reverts it to the Git state.  
-> - Clear audit trail: Git history shows all changes.  
-> - Simplified rollbacks: Revert a commit to restore a previous environment state.
-
-> **Disadvantages**  
-> - Learning curve if your team is used to push-based deployments.  
-> - Requires additional tools (e.g., ArgoCD, Helm, or Kustomize).
+**Trigger**: CI is triggered on every push to the main (default) branch or via pull requests.
 
 ---
 
-## 7. Branching Strategy
+### Push Deployment
 
-Explain the branching methodology your team follows to maintain clean merges and reduce conflicts.
+In a **push-based** deployment model (using a Kubernetes deployment task in the Azure DevOps release pipeline), container images are pushed to the target environment (Dev, Staging, Production) once the build is successful. We use a single AKS cluster with separate namespaces to isolate each environment.
 
-- **Common Strategies**:  
-  - **GitFlow**: Feature branches, develop branch, release branches.  
-  - **GitHub Flow**: Single main branch, feature branches, PR-based merges.  
-  - **Trunk-Based Development**: Short-lived feature branches, rapid merges to main.  
-
-Explain how this ties into your pipeline triggers. For example:
-
-> Pull requests to `develop` branch trigger the CI pipeline. Merges to `main` branch trigger both CI and a release to staging.
+- **Trigger**: Typically occurs on merges to `main` or on completion of a successful build in Dev, Staging, or Production.
 
 ---
 
-## 8. Build Pipeline
+### GitOps Approach (ArgoCD)
 
-Detail how your build pipeline is structured in Azure DevOps.
+We also have a **GitOps** strategy using **ArgoCD** installed in the AKS cluster via Helm charts. In this model:
 
-1. **Pipeline Definition**: Provide a snippet of the YAML file (`azure-pipelines.yml`) and briefly explain each stage.  
-2. **Stages**: 
-   - *Compile/Build:* Tools used for build (e.g., .NET build tasks).  
-   - *Unit Tests:* Testing frameworks, how coverage is measured.  
-   - *Code Analysis:* SonarQube or any other static code analysis tools.  
-   - *Artifact Packaging:* How artifacts (e.g., .zip files, Docker images) are produced and stored in Azure Artifacts or a registry.
+1. **ArgoCD** continuously watches a designated Git repository (in this case, `Azure repo- k8s-specifications/`) which acts as the source of truth for Kubernetes manifests.  
+2. When a new commit updates the image tag or other config in the manifest, **ArgoCD** detects this change and automatically reconciles the live cluster to match the desired state in Git.  
+3. If any drift occurs (someone manually modifies a resource in AKS), ArgoCD reverts the cluster to the Git-defined state.
 
-> **Example Snippet**  
-> ```yaml
-> trigger:
->   branches:
->     include:
->       - main
->       - develop
->
-> pool:
->   vmImage: 'ubuntu-latest'
->
-> steps:
-> - task: DotNetCoreCLI@2
->   inputs:
->     command: 'build'
->     projects: '**/*.csproj'
->
-> - task: DotNetCoreCLI@2
->   inputs:
->     command: 'test'
->     projects: '**/*Tests/*.csproj'
-> ```
-  
-Explain how to customize or extend these steps.
+This approach centralizes environment control in the cluster itself rather than in the deployment pipeline.
 
 ---
 
-## 9. Release Pipeline
+## 6. Environment Variables and Secrets
 
-Detail the release pipeline that handles deployment to various environments. If you are using multi-stage YAML pipelines, clarify the release stages in the same YAML. If you are using classic release pipelines in Azure DevOps, describe the environment definitions and how artifacts are deployed.
+- **Azure Key Vault**:  
+  - Azure DevOps Personal Access Token (PAT) is stored as a secret in Key Vault. The Key Vault is linked to variable groups in Azure DevOps, and the PAT is used in scripts.  
 
-- **Stages/Environments**: Development, Staging, Production.  
-- **Deployment Method**: Web App Deploy task, Kubernetes deployment, or Container Registry push.  
-- **Approvals and Checks**: Automated or manual approvals for production.  
-- **Rollback Strategy**: Mention how you roll back if a deployment fails (e.g., revert to a previous release).
-
----
-
-## 10. Testing and Quality Checks
-
-Explain the testing strategy used within the CI pipeline and any other quality checks:
-
-- **Unit Tests**: Framework and coverage thresholds.  
-- **Integration Tests**: How and when they are executed.  
-- **Security Scans**: SAST, DAST, container scans, etc.  
-- **Linting/Formatting**: Tools like ESLint, StyleCop, Prettier, etc.
+- **Variable Groups**:  
+  - The Key Vault secret (Azure PAT) is linked to the pipeline via a variable named `az-repo2-token`. This variable is utilized in the “Update_Image_tag” stage of the CI pipelines to authenticate and push image references.
 
 ---
 
-## 11. Environment Variables and Secrets
+## 7. Troubleshooting
 
-Detail how environment-specific configuration is handled and how secrets are managed securely:
+A few issues encountered during the project:
 
-- **Azure Key Vault**: If used, describe how secrets are retrieved.  
-- **Variable Groups**: If using Azure DevOps variable groups, list important variables and usage.  
-- **Local Development**: Provide guidelines for using `.env` files or local environment settings while keeping secrets safe.
-
----
-
-## 12. Monitoring and Logging
-
-If applicable, describe how you monitor the health of your application and pipelines:
-
-- **Application Insights**: Real-time monitoring for Azure-hosted apps.  
-- **Log Aggregation**: Azure Monitor, Log Analytics, or third-party tools.  
-- **Alerts**: Automated alerts for failed builds, service downtime, etc.
+- **Access Denied**: Azure DevOps permissions misconfiguration.  
+- **Release Errors**: Incorrect service connections to Azure Container Registry, Kubernetes, or Managed Identities causing “permission denied” errors.  
+- **Docker Registry Secrets**: Creating Kubernetes secrets to ensure deployments can pull images with the correct tags and credentials.
 
 ---
 
-## 13. Troubleshooting
+## 8. Best Practices
 
-Provide common problems and their known solutions:
+Some of the best practices utilized in this project include:
 
-> **Examples**  
-> - **Build Failures**: Missing NuGet packages, solution not compiling.  
-> - **Release Errors**: Incorrect service connection, permission denied.  
-> - **Access Denied**: Azure DevOps permissions misconfiguration.
+- **Security**:  
+  - Use secure variable storage like Azure Key Vault.  
+  - Upload secure files to the pipeline and manage permissions carefully.  
 
----
+- **Pipelines**:  
+  - Organize folders and naming conventions for multiple pipelines (CI, CD, infrastructure).  
 
-## 14. Best Practices
-
-Offer recommendations and lessons learned:
-
-- **Pull Request Reviews**: Require at least one reviewer before merging.  
-- **Automated Tests**: All merges must pass tests.  
-- **Versioning**: Use SemVer or another clear versioning strategy.  
-- **Security**: Use secure variable storage, enforce SSL, update dependencies regularly.
-
----
-
-## 15. Contributing
-
-Guidelines for how others can contribute:
-
-1. **Fork the Repository**: Describe the process.  
-2. **Create a Feature Branch**: Follow your team’s branching policy.  
-3. **Commit and Push**: Use meaningful commit messages.  
-4. **Pull Request**: Use templates, link to relevant issues, pass CI checks.  
-5. **Reviews**: Explain the review process and how merges are finalized.
-
----
-
-## 16. License
-
-Include your project's license details. For example:
-
-> This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
-
----
-
-## 17. Contact Information
-
-Provide ways to reach the maintainers or team members:
-
-- **Project Maintainer**: Name, email, or Slack channel.  
-- **Support Channels**: GitHub Issues, Microsoft Teams channel, etc.
-
----
-
-## 18. Final Notes
-
-- **Use Visual Aids**: Add screenshots or diagrams of the Azure DevOps pipelines as necessary.  
-- **Keep Documentation Updated**: Revise the documentation whenever your pipeline or project structure changes.  
-- **Wiki or `docs/` Folder**: Larger projects may benefit from more detailed docs in a separate folder or a GitHub Wiki.  
-- **Automate Where Possible**: Consider using badges (build status, test coverage) and auto-generated release notes.
+- **Commit and Push**:  
+  - Write meaningful commit messages for future reference and easier auditing.
