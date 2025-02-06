@@ -50,8 +50,6 @@ Important folders and files in the repository used for the CI/CD process. (Adjus
 >├── 04-K8s-Iac-Terraform.yml                  # Azure DevOps pipeline for validating and applying Terraform
 >└── 05-K8s-specifications-Publish-to-Release-Pipeline.yml
                                               # Pipeline that packages K8s manifests and triggers deployment
-> ```
-
 ---
 
 ## 4. Prerequisites
