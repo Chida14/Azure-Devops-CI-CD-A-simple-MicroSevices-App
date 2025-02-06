@@ -155,9 +155,12 @@ After the pipelines run successfully and the infrastructure plus microservices a
 1. **Vote App**  
    - Accessible via a web interface (e.g., `<Node_IP>/<node_port>`) as the service type used here is NodePort
    - Users can select between two options and submit their votes.
+     
 ![Image](https://github.com/user-attachments/assets/07b631a1-a8d1-4b9f-9646-7b3e91eb0d8e)
+
 
 2. **Result App**  
    - Accessible at `<Node_IP>/<node_port>`  
    - Displays real-time vote %counts retrieved from the database, updated automatically.
+  
 ![Image](https://github.com/user-attachments/assets/bf8e677f-9300-4347-a6e1-b18e6df7d87a)
