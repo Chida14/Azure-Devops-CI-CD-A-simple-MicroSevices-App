@@ -36,7 +36,7 @@ We use two approaches to deploy to our Kubernetes clusters: **push-based** deplo
 Important folders and files in the repository used for the CI/CD process. (Adjust to your repository layout as needed.)
  
 ```bash
-.
+> .
 ├── k8s-specifications/                       # K8s YAML manifests for Vote, Worker, Redis, Postgressdb and Result microservices
 ├── K8s-terraform-manifest/                   # Terraform files for deploying infrastructure (AKS)
 ├── result/                                   # Node.js web application (displays voting results)
