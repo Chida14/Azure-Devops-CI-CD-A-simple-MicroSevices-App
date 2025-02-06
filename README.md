@@ -52,12 +52,8 @@ Important folders and files in the repository used for the CI/CD process. (Adjus
 > ├── 02-Worker-build-push-to-ACR.yml           # Azure DevOps pipeline for building & pushing Worker image
 > ├── 03-Result-Build-and-Push-to-ACR.yml       # Azure DevOps pipeline for building & pushing Result image
 > ├── 04-K8s-Iac-Terraform.yml                  # Azure DevOps pipeline for validating and applying Terraform
-> └── 05-K8s-specifications-Publish-to-Release-Pipeline.yml
+> └── 05-K8s-specifications-Publish-to-Release-Pipeline.yml # Pipeline that packages K8s manifests and triggers deployment
                                               # Pipeline that packages K8s manifests and triggers deployment
-> ├── k8s-specifications/      # YAML manifests for the microservices
-> ├── terraform/               # Terraform files for AKS & infrastructure
-> ├── pipelines/               # Azure DevOps pipeline definitions
-> └── README.md                # Project documentation
 > ```
 
 ---
