@@ -120,11 +120,16 @@ This approach centralizes environment control in the cluster itself rather than 
 ## 6. Environment Variables and Secrets
 
 - **Azure Key Vault**:  
-  - Azure DevOps Personal Access Token (PAT) is stored as a secret in Key Vault. The Key Vault is linked to variable groups in Azure DevOps, and the PAT is used in scripts.  
+  - Azure DevOps Personal Access Token (PAT) is stored as a secret in Key Vault. The Key Vault is linked to variable groups in Azure DevOps, and the PAT is used in scripts.
 
 - **Variable Groups**:  
   - The Key Vault secret (Azure PAT) is linked to the pipeline via a variable named `az-repo2-token`. This variable is utilized in the “Update_Image_tag” stage of the CI pipelines to authenticate and push image references.
+  - Subcription ID need for the provider block of the K8s terraform manifest is stored as ENV variable i the variable group and passed to the pipeline.
 
+  ![Image](https://github.com/user-attachments/assets/1798a6a2-78e2-44a3-a36f-cb54b3aacca4)
+
+  ![Image](https://github.com/user-attachments/assets/02ab8146-f24a-49a1-aa8d-8e52fa9b6876)
+  
 ---
 
 ## 7. Troubleshooting
