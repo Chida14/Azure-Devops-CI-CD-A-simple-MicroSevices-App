@@ -1,40 +1,6 @@
 # Azure-Devops-CI-CD-A-Simple-MicroSevices-App
 
-# 1. Project Title
-
-Provide a concise summary of your project or application:
-
-> **Example**  
-> This repository contains a sample .NET Core web application with a fully automated CI/CD pipeline in Azure DevOps.
-
----
-
-## 2. Table of Contents
-
-1. [Introduction](#3-introduction)  
-2. [Architecture Overview](#4-architecture-overview)  
-3. [Project Structure](#5-project-structure)  
-4. [Prerequisites](#6-prerequisites)  
-5. [Azure DevOps CI/CD Overview](#7-azure-devops-cicd-overview)  
-    1. [Continuous Integration (CI)](#71-continuous-integration-ci)  
-    2. [Continuous Delivery/Deployment (CD)](#72-continuous-deliverydeployment-cd)  
-        - [Push-based Approach](#push-based-approach)  
-        - [GitOps Approach (ArgoCD)](#gitops-approach-argocd)  
-6. [Branching Strategy](#8-branching-strategy)  
-7. [Build Pipeline](#9-build-pipeline)  
-8. [Release Pipeline](#10-release-pipeline)  
-9. [Testing and Quality Checks](#11-testing-and-quality-checks)  
-10. [Environment Variables and Secrets](#12-environment-variables-and-secrets)  
-11. [Monitoring and Logging](#13-monitoring-and-logging)  
-12. [Troubleshooting](#14-troubleshooting)  
-13. [Best Practices](#15-best-practices)  
-14. [Contributing](#16-contributing)  
-15. [License](#17-license)  
-16. [Contact Information](#18-contact-information)
-
----
-
-## 3. Introduction
+# 1. Introduction
 
 Explain why this project exists, the problem it solves, and its primary goals.
 
@@ -43,7 +9,34 @@ Explain why this project exists, the problem it solves, and its primary goals.
 
 ---
 
-## 4. Architecture Overview
+## 2. Table of Contents
+
+1. [Introduction](#1-introduction)  
+2. [Table of Contents](#2-table-of-contents)  
+3. [Architecture Overview](#3-architecture-overview)  
+4. [Project Structure](#4-project-structure)  
+5. [Prerequisites](#5-prerequisites)  
+6. [Azure DevOps CI/CD Overview](#6-azure-devops-cicd-overview)  
+   1. [Continuous Integration (CI)](#61-continuous-integration-ci)  
+   2. [Continuous Delivery/Deployment (CD)](#62-continuous-deliverydeployment-cd)  
+      - [Push-based Approach](#push-based-approach)  
+      - [GitOps Approach (ArgoCD)](#gitops-approach-argocd)  
+7. [Branching Strategy](#7-branching-strategy)  
+8. [Build Pipeline](#8-build-pipeline)  
+9. [Release Pipeline](#9-release-pipeline)  
+10. [Testing and Quality Checks](#10-testing-and-quality-checks)  
+11. [Environment Variables and Secrets](#11-environment-variables-and-secrets)  
+12. [Monitoring and Logging](#12-monitoring-and-logging)  
+13. [Troubleshooting](#13-troubleshooting)  
+14. [Best Practices](#14-best-practices)  
+15. [Contributing](#15-contributing)  
+16. [License](#16-license)  
+17. [Contact Information](#17-contact-information)  
+18. [Final Notes](#18-final-notes)
+
+---
+
+## 3. Architecture Overview
 
 Provide a high-level overview or diagram of the system’s architecture, focusing on how your application, services, databases, and Azure DevOps pipelines interact.
 
@@ -52,7 +45,7 @@ Provide a high-level overview or diagram of the system’s architecture, focusin
 
 ---
 
-## 5. Project Structure
+## 4. Project Structure
 
 Outline the important folders and files in your repository. Emphasize how each part relates to the CI/CD process.
 
@@ -73,7 +66,7 @@ Outline the important folders and files in your repository. Emphasize how each p
 
 ---
 
-## 6. Prerequisites
+## 5. Prerequisites
 
 List what is needed before someone can successfully run or contribute to the project:
 
@@ -84,24 +77,25 @@ List what is needed before someone can successfully run or contribute to the pro
 
 ---
 
-## 7. Azure DevOps CI/CD Overview
+## 6. Azure DevOps CI/CD Overview
 
 Give an overview of the CI/CD pipeline stages and how they are organized in Azure DevOps.
 
-### 7.1. Continuous Integration (CI)
+### 6.1. Continuous Integration (CI)
 
 - **Triggering**: Describe how CI is triggered (e.g., on every push to `main` or via pull requests).  
 - **Goals**: Explain code compilation, unit tests, linting, static code analysis, etc.
 
-### 7.2. Continuous Delivery/Deployment (CD)
+### 6.2. Continuous Delivery/Deployment (CD)
 
 - **Promotion Through Stages**: Development → Testing → Production.  
 - **Approvals & Gates**: State any manual approval gates or automated checks.
 
 #### Push-based Approach
 A traditional push-based CI/CD model involves the pipeline pushing changes to the target environment once the build and tests pass. Azure DevOps orchestrates the entire deployment process:
-1. **Build and Test**: Code is compiled, tests are run, and artifacts are produced.
-2. **Push Deployment**: A deployment task (e.g., Azure WebApp Deploy, Kubernetes deployment task) then pushes the artifacts or container images to the target environment.
+
+1. **Build and Test**: Code is compiled, tests are run, and artifacts are produced.  
+2. **Push Deployment**: A deployment task (e.g., Azure WebApp Deploy, Kubernetes deployment task) then pushes the artifacts or container images to the target environment.  
 3. **Trigger**: Typically triggered on merges to `main` or completion of a successful build in staging.
 
 > **Advantages**  
@@ -115,22 +109,22 @@ A traditional push-based CI/CD model involves the pipeline pushing changes to th
 #### GitOps Approach (ArgoCD)
 A GitOps model shifts the deployment control to the environment itself by continuously syncing from a designated Git repository. Tools like ArgoCD monitor configuration in a repo (often a separate “environment” repo) and apply changes to the cluster or infrastructure.
 
-1. **Declarative Configuration**: The application and environment are described declaratively in YAML or Helm charts.
-2. **Sync/Monitoring**: ArgoCD monitors the Git repository for changes. Once a change is detected, ArgoCD pulls the updated configuration and reconciles it with the live environment.
+1. **Declarative Configuration**: The application and environment are described declaratively in YAML or Helm charts.  
+2. **Sync/Monitoring**: ArgoCD monitors the Git repository for changes. Once a change is detected, ArgoCD pulls the updated configuration and reconciles it with the live environment.  
 3. **Rollback**: Versioning is inherent in Git; reverting a commit reverts the environment.
 
 > **Advantages**  
 > - Self-healing: If someone manually changes the environment, ArgoCD reverts it to the Git state.  
 > - Clear audit trail: Git history shows all changes.  
-> - Simplified rollbacks: Revert a commit to restore a previous environment state.  
+> - Simplified rollbacks: Revert a commit to restore a previous environment state.
 
 > **Disadvantages**  
 > - Learning curve if your team is used to push-based deployments.  
-> - Requires additional tools (e.g., ArgoCD, Helm, or Kustomize).  
+> - Requires additional tools (e.g., ArgoCD, Helm, or Kustomize).
 
 ---
 
-## 8. Branching Strategy
+## 7. Branching Strategy
 
 Explain the branching methodology your team follows to maintain clean merges and reduce conflicts.
 
@@ -145,7 +139,7 @@ Explain how this ties into your pipeline triggers. For example:
 
 ---
 
-## 9. Build Pipeline
+## 8. Build Pipeline
 
 Detail how your build pipeline is structured in Azure DevOps.
 
@@ -183,7 +177,7 @@ Explain how to customize or extend these steps.
 
 ---
 
-## 10. Release Pipeline
+## 9. Release Pipeline
 
 Detail the release pipeline that handles deployment to various environments. If you are using multi-stage YAML pipelines, clarify the release stages in the same YAML. If you are using classic release pipelines in Azure DevOps, describe the environment definitions and how artifacts are deployed.
 
@@ -194,7 +188,7 @@ Detail the release pipeline that handles deployment to various environments. If 
 
 ---
 
-## 11. Testing and Quality Checks
+## 10. Testing and Quality Checks
 
 Explain the testing strategy used within the CI pipeline and any other quality checks:
 
@@ -205,7 +199,7 @@ Explain the testing strategy used within the CI pipeline and any other quality c
 
 ---
 
-## 12. Environment Variables and Secrets
+## 11. Environment Variables and Secrets
 
 Detail how environment-specific configuration is handled and how secrets are managed securely:
 
@@ -215,7 +209,7 @@ Detail how environment-specific configuration is handled and how secrets are man
 
 ---
 
-## 13. Monitoring and Logging
+## 12. Monitoring and Logging
 
 If applicable, describe how you monitor the health of your application and pipelines:
 
@@ -225,7 +219,7 @@ If applicable, describe how you monitor the health of your application and pipel
 
 ---
 
-## 14. Troubleshooting
+## 13. Troubleshooting
 
 Provide common problems and their known solutions:
 
@@ -236,7 +230,7 @@ Provide common problems and their known solutions:
 
 ---
 
-## 15. Best Practices
+## 14. Best Practices
 
 Offer recommendations and lessons learned:
 
@@ -247,7 +241,7 @@ Offer recommendations and lessons learned:
 
 ---
 
-## 16. Contributing
+## 15. Contributing
 
 Guidelines for how others can contribute:
 
@@ -259,7 +253,7 @@ Guidelines for how others can contribute:
 
 ---
 
-## 17. License
+## 16. License
 
 Include your project's license details. For example:
 
@@ -267,7 +261,7 @@ Include your project's license details. For example:
 
 ---
 
-## 18. Contact Information
+## 17. Contact Information
 
 Provide ways to reach the maintainers or team members:
 
@@ -276,7 +270,7 @@ Provide ways to reach the maintainers or team members:
 
 ---
 
-### Final Notes
+## 18. Final Notes
 
 - **Use Visual Aids**: Add screenshots or diagrams of the Azure DevOps pipelines as necessary.  
 - **Keep Documentation Updated**: Revise the documentation whenever your pipeline or project structure changes.  
