@@ -39,10 +39,6 @@ Important folders and files in the repository used for the CI/CD process. (Adjus
 > **Example**  
 > ```bash
 > .
-> ├── src/
-> │   ├── vote/                # Python-based voting app
-> │   ├── worker/              # .NET worker service
-> │   ├── result/              # Node.js results app
 > ├── k8s-specifications/                       # K8s YAML manifests for Vote, Worker, Redis, Postgressdb and Result microservices
 > ├── K8s-terraform-manifest/                   # Terraform files for deploying infrastructure (AKS)
 > ├── result/                                   # Node.js web application (displays voting results)
