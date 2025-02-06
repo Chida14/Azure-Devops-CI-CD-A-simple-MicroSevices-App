@@ -26,6 +26,9 @@ This is a simple voting application made up of multiple microservices:
 
 We use two approaches to deploy to our Kubernetes clusters: **push-based** deployments and a **GitOps** approach using ArgoCD.
 
+![Image](https://github.com/user-attachments/assets/00dc93a4-9665-407d-9b6d-b0e6adb090a4)
+
+![Image](https://github.com/user-attachments/assets/6aa79828-5cf5-4c69-b979-b1d091a88f89)
 ---
 
 ## 3. Project Structure
