@@ -89,6 +89,8 @@ A shell script is to used update the Kubernetes deployment manifests (`Vote`, `W
 
 **Trigger**: CI is triggered on every push to the main (default) branch in the respective folders vote, result and worker.
 
+![Image](https://github.com/user-attachments/assets/f4d9662e-0a7c-480c-ab63-92fcfa4769e7)
+
 ---
 
 ### Push Deployment
@@ -98,6 +100,9 @@ In a **push-based** deployment model (using a Kubernetes deployment task in the 
 - **Trigger**: Occurs on merges or pr on `main` branch in the k8s-specifications/
 
 State of the environment is controlled primarily by the pipeline rather than by the environment itself.
+
+![Image](https://github.com/user-attachments/assets/4332102f-2e27-4426-8588-6cdc6a266ff9)
+
 ---
 
 ### GitOps Approach (ArgoCD)
