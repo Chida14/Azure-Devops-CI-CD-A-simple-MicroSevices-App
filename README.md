@@ -81,22 +81,23 @@ We have **5 pipelines** set up, each targeting specific aspects of this project:
 Within each microservice’s CI pipeline, we perform:
 
 - **Code Analysis** using SonarQube  
-- **Build and Container Image Creation**  
-- **Security Scanning** of the container image using tools like Trivy  
-- **Publishing** of the resulting image to **Azure Container Registry (ACR)**  
+- **Build Container Image**  
+- **Security Scanning** of the container image using Trivy  
+- **Publishing** of the image to **Azure Container Registry (ACR)**  
 
-A shell script also updates the Kubernetes deployment manifests (`Vote`, `Worker`, and `Result`) in the `k8s-specifications` directory with the latest container image tag.
+A shell script is to used update the Kubernetes deployment manifests (`Vote`, `Worker`, and `Result`) in the `k8s-specifications` directory with the latest container image tag.
 
-**Trigger**: CI is triggered on every push to the main (default) branch or via pull requests.
+**Trigger**: CI is triggered on every push to the main (default) branch in the respective folders vote, result and worker.
 
 ---
 
 ### Push Deployment
 
-In a **push-based** deployment model (using a Kubernetes deployment task in the Azure DevOps release pipeline), container images are pushed to the target environment (Dev, Staging, Production) once the build is successful. We use a single AKS cluster with separate namespaces to isolate each environment.
+In a **push-based** deployment model (using a Kubernetes deployment task in the Azure DevOps release pipeline), container images are pushed to the target environment (Dev, Staging, Production). In this project we use a single AKS cluster with separate namespaces to isolate each environment.
 
-- **Trigger**: Typically occurs on merges to `main` or on completion of a successful build in Dev, Staging, or Production.
+- **Trigger**: Occurs on merges or pr on `main` branch in the k8s-specifications/
 
+State of the environment is controlled primarily by the pipeline rather than by the environment itself.
 ---
 
 ### GitOps Approach (ArgoCD)
@@ -152,9 +153,11 @@ Some of the best practices utilized in this project include:
 After the pipelines run successfully and the infrastructure plus microservices are deployed:
 
 1. **Vote App**  
-   - Accessible via a web interface (e.g., `<LoadBalancerIP_or_URL>/vote`)  
+   - Accessible via a web interface (e.g., `<Node_IP>/<node_port>`) as the service type used here is NodePort
    - Users can select between two options and submit their votes.
+![Image](https://github.com/user-attachments/assets/07b631a1-a8d1-4b9f-9646-7b3e91eb0d8e)
 
 2. **Result App**  
-   - Accessible at `<LoadBalancerIP_or_URL>/result`  
-   - Displays real-time vote counts retrieved from the database, updated automatically.
+   - Accessible at `<Node_IP>/<node_port>`  
+   - Displays real-time vote %counts retrieved from the database, updated automatically.
+![Image](https://github.com/user-attachments/assets/bf8e677f-9300-4347-a6e1-b18e6df7d87a)
