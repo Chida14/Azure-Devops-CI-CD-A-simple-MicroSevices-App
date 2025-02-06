@@ -18,7 +18,9 @@ This is a simple voting application made up of multiple microservices:
 - **A Redis** instance that collects new votes  
 - **A .NET worker** which consumes votes and stores them in…  
 - **A Postgres database** backed by a Docker volume  
-- **A Node.js web app** which shows the results of the voting in real time  
+- **A Node.js web app** which shows the results of the voting in real time
+  
+![Image](https://github.com/user-attachments/assets/7c885ce4-930b-4469-a3bc-5a331006c4a4)
 
 ### 2.2. CI/CD Architecture
 
