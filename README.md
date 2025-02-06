@@ -139,7 +139,7 @@ This approach centralizes environment control in the cluster itself rather than 
 A few issues encountered during the project:
 
 - **Access Denied**: Azure DevOps permissions misconfiguration.  
-- **Release Errors**: Incorrect service connections to Azure Container Registry, Kubernetes, or Managed Identities causing “permission denied” errors.  
+- **Release Errors**: Incorrect service connections to Azure Container Registry, Kubernetes, Azure storageaccount (used as backend to store the terraform state file) or Managed Identities causing “permission denied” errors.  
 - **Docker Registry Secrets**: Creating Kubernetes secrets to ensure deployments can pull images with the correct tags and credentials.
 
 ---
