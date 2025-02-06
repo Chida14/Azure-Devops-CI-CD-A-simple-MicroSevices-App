@@ -31,22 +31,24 @@ We use two approaches to deploy to our Kubernetes clusters: **push-based** deplo
 ![Image](https://github.com/user-attachments/assets/6aa79828-5cf5-4c69-b979-b1d091a88f89)
 ---
 
-## 3. Project Structure
+## 3. Project Directory Structure
 
 Important folders and files in the repository used for the CI/CD process. (Adjust to your repository layout as needed.)
+ 
+```bash
+.
+├── k8s-specifications/                       # K8s YAML manifests for Vote, Worker, Redis, Postgressdb and Result microservices
+├── K8s-terraform-manifest/                   # Terraform files for deploying infrastructure (AKS)
+├── result/                                   # Node.js web application (displays voting results)
+├── vote/                                     # Python-based frontend voting application
+├── worker/                                   # .NET worker service that processes and stores votes
+├── 01-Vote-build-push-to-ACR.yml             # Azure DevOps pipeline for building & pushing Vote image
+├── 02-Worker-build-push-to-ACR.yml           # Azure DevOps pipeline for building & pushing Worker image
+├── 03-Result-Build-and-Push-to-ACR.yml       # Azure DevOps pipeline for building & pushing Result image
+├── 04-K8s-Iac-Terraform.yml                  # Azure DevOps pipeline for validating and applying Terraform
+└── 05-K8s-specifications-Publish-to-Release-Pipeline.yml
+                                              # Pipeline that packages K8s manifests and triggers deployment
 
-> **Example**  
-> ```bash
-> .
-> ├── src/
-> │   ├── vote/                # Python-based voting app
-> │   ├── worker/              # .NET worker service
-> │   ├── result/              # Node.js results app
-> ├── k8s-specifications/      # YAML manifests for the microservices
-> ├── terraform/               # Terraform files for AKS & infrastructure
-> ├── pipelines/               # Azure DevOps pipeline definitions
-> └── README.md                # Project documentation
-> ```
 
 ---
 
