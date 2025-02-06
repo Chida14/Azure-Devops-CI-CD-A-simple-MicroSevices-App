@@ -34,8 +34,9 @@ We use two approaches to deploy to our Kubernetes clusters: **push-based** deplo
 ## 3. Project Directory Structure
 
 Important folders and files in the repository used for the CI/CD process. (Adjust to your repository layout as needed.)
- 
-```bash
+
+> **Example**  
+> ```bash
 > .
 ├── k8s-specifications/                       # K8s YAML manifests for Vote, Worker, Redis, Postgressdb and Result microservices
 ├── K8s-terraform-manifest/                   # Terraform files for deploying infrastructure (AKS)
@@ -77,6 +78,7 @@ We have **5 pipelines** set up, each targeting specific aspects of this project:
    - Publishes the Kubernetes manifest files to a staging directory in the pipeline for the release pipeline to pick up and deploy the application to the Dev AKS cluster.
 
 Within each microservice’s CI pipeline, we perform:
+
 - **Code Analysis** using SonarQube  
 - **Build and Container Image Creation**  
 - **Security Scanning** of the container image using tools like Trivy  
@@ -141,3 +143,17 @@ Some of the best practices utilized in this project include:
 
 - **Commit and Push**:  
   - Write meaningful commit messages for future reference and easier auditing.
+
+---
+
+## End Result of the App Deployment
+
+After the pipelines run successfully and the infrastructure plus microservices are deployed:
+
+1. **Vote App**  
+   - Accessible via a web interface (e.g., `<LoadBalancerIP_or_URL>/vote`)  
+   - Users can select between two options and submit their votes.
+
+2. **Result App**  
+   - Accessible at `<LoadBalancerIP_or_URL>/result`  
+   - Displays real-time vote counts retrieved from the database, updated automatically.
