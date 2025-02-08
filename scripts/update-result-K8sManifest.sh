@@ -2,7 +2,7 @@
 
 set -x
 
-# Set the repository URL
+# Set the repository URL.
 REPO_URL="https://$4@dev.azure.com/cmandolk/voting-new/_git/voting-new"
 
 # Clone the git repository into the /tmp directory
