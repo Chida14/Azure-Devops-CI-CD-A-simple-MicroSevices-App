@@ -92,15 +92,15 @@ stages:
       - job: ipdate_image_tag
         displayName: "Update the image tag for the K8s manifest of Vote deployment"
         steps:
-          - task: CmdLine@2
-            inputs:
-              script: |
-                file=/home/azureuser/myagent/_work/2/s/scripts/update-vote-K8sManifest.sh
-                sudo apt-get update -y
-                sudo apt-get install dos2unix -y
-                # Convert the script to Unix format and make it executable
-                dos2unix $file
-                chmod +x $file
+          # - task: CmdLine@2
+          #   inputs:
+          #     script: |
+          #       file=/home/azureuser/myagent/_work/2/s/scripts/update-vote-K8sManifest.sh
+          #       sudo apt-get update -y
+          #       sudo apt-get install dos2unix -y
+          #       # Convert the script to Unix format and make it executable
+          #       dos2unix $file
+          #       chmod +x $file
           - task: ShellScript@2
             inputs:
               scriptPath: 'scripts/update-vote-K8sManifest.sh'
