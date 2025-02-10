@@ -107,13 +107,15 @@ State of the environment is controlled primarily by the pipeline rather than by 
 
 ### GitOps Approach (ArgoCD)
 
-We also have a **GitOps** strategy using **ArgoCD** installed in the AKS cluster via Helm charts. In this model:
+We also have a **GitOps** strategy using **ArgoCD** installed in the AKS cluster. In this model:
 
 1. **ArgoCD** continuously watches a designated Git repository (in this case, `Azure repo- k8s-specifications/`) which acts as the source of truth for Kubernetes manifests.  
 2. When a new commit updates the image tag or other config in the manifest, **ArgoCD** detects this change and automatically reconciles the live cluster to match the desired state in Git.  
 3. If any drift occurs (someone manually modifies a resource in AKS), ArgoCD reverts the cluster to the Git-defined state.
 
 This approach centralizes environment control in the cluster itself rather than in the deployment pipeline.
+
+![Image](https://github.com/user-attachments/assets/afa47985-1128-402d-9e11-0c647c79ac6d)
 
 ---
 
