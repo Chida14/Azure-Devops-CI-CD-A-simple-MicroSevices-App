@@ -32,7 +32,7 @@ We use two approaches to deploy to our Kubernetes clusters: **push-based** deplo
 
 ---
 
-## 3. Project Structure
+## 3. Project Directory Structure
 
 Important folders and files in the repository used for the CI/CD process. (Adjust to your repository layout as needed.)
 
