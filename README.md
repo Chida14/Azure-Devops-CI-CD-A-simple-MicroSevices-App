@@ -95,7 +95,7 @@ A shell script is to used update the Kubernetes deployment manifests (`Vote`, `W
 
 ### Push Deployment
 
-In a **push-based** deployment model (using a Kubernetes deployment task in the Azure DevOps release pipeline), container images are pushed to the target environment (Dev, Staging, Production). In this project we use a single AKS cluster with separate namespaces to isolate each environment.
+In a **push-based** deployment model (using a Kubernetes deployment task in the Azure DevOps release pipeline), container images are pushed to the target environment (Dev, Staging, Production). In this project we use a single AKS cluster with separate namespaces to isolate each environment. Each stage is can be configured with Pre and Post- Deployment approvals.
 
 - **Trigger**: Occurs on merges or pr on `main` branch in the k8s-specifications/
 
