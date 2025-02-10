@@ -56,7 +56,7 @@ Important folders and files in the repository used for the CI/CD process. (Adjus
 
 ## 4. Prerequisites
 
-- **Tools**: Azure CLI, Docker, Terraform, ArgoCD, HELM.  
+- **Tools**: Azure CLI, Docker, Terraform, ArgoCD.  
 - **Azure DevOps**: Valid account with appropriate permissions to create pipelines and releases.  
 - **GitHub Access**: Permission to clone/push/pull from this repository.  
 - **IDE**: (Optional) VSCode (or any IDE of choice).
