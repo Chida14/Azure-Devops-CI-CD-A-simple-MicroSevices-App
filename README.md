@@ -2,7 +2,7 @@
 
 # 1. Introduction
 
-This project is a reference implementation showing how to build, test, and deploy a simple distributed application using Azure DevOps, running across multiple K8s deployments and services. We leverage a fully automated pipeline for both Continuous Integration (CI) and Continuous Deployment (CD), ensuring code quality, reliability, and speed of delivery.
+This project is a reference implementation showing how to build, test, and deploy a simple distributed microservices application using Azure DevOps, running across multiple K8s deployments and services. We leverage a fully automated pipeline for both Continuous Integration (CI) and Continuous Deployment (CD), ensuring code quality, reliability, and speed of delivery.
 
 The source code is cloned from [https://github.com/dockersamples/example-voting-app](https://github.com/dockersamples/example-voting-app).
 
